@@ -6,9 +6,20 @@ import User from '../model/user.js';
 
 const authRouter = module.exports = new Router();
 
-authRouter.post('/signup', jsonParser, (req, res, next) => {
-    console.log('hit /signup');
+authRouter.post('/api/signup', jsonParser, (req, res, next) => {
+    console.log('hit /api/signup');
 
-    User.create(req.body)
-    // https://mherman.org/blog/token-based-authentication-with-node/
+    User.create(req.body) // creates user from info given in request
+    .then(token => res.send(token)) // "not too sure about how tokens work" -Uzair
+    .catch(next)
 })
+
+authRouter.get('/api/login', basicAuth, (req, res, next) => {
+    console.log('hit /api/login')
+
+    req.user.tokenCreate() 
+    .then(token => res.send(token)) // "not too sure about how tokens work" -Uzair
+    .catch(next)
+})
+
+
