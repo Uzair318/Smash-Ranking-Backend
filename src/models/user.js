@@ -1,9 +1,10 @@
 // schema for user
+const mongoose = require('mongoose');
 
-const userSchema = mongoose.Schema({
+var userSchema = mongoose.Schema({
     username: {type: String, required: true, unique: true},
     passwordHash: {type: String, required: true},
     created: {type: Date, default: () => new Date()},
 });
 
-const User = module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model('user', userSchema);

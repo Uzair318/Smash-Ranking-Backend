@@ -1,26 +1,20 @@
 //import packages
-import express from 'express';
-import cors from 'cors';
-import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
-
+var express = require('express');
+var cors = require('cors')
+var mongoose = require('mongoose')
+var Mongo = require('./Mongo.js')
+var bodyParser = require('body-parser')
 const app = express();
 const router = express.Router();
+const dotenv = require('dotenv').config();
 
 // env variables
-const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI;
+const PORT = process.env.PORT || 8000;
 
-mongoose.Promise = Promise; //not sure what this does tbh (sets to standard promise?)
 
-// connect to MongoDB
-mongoose.connect(MONGO_URI, () => {
-    console.log('connected to DB');
-})
 
-app.use(bodyParser.json(), cors()) // cross origin resource sharing
+// app.use(bodyParser.json(), cors()) // cross origin resource sharing
 
-app.use(require('.../route/auth-router')); // see if this is brought up again
 
 // for now just return 404 to every route
 app.all('*', (request, response) => {
@@ -28,21 +22,19 @@ app.all('*', (request, response) => {
     return response.sendStatus(404);
 })
 
-app.use(require('./error-middleware')); // see if this is brought up again
+// app.use(require('./error-middleware')); // if we use error middleware
 
 // start command
-export const start = () => {
+exports.start = () => {
     app.listen(PORT, () => {
-        console.log('listening on port: ' + PORT);
+        console.log('server listening on port: ' + PORT);
     })
 }
 
 // stop command
-export const stop = () => {
+exports.stop = () => {
     app.close(PORT, () => {
-        console.log('shut down on port: ' + PORT);
+        console.log('server shut down on port: ' + PORT);
     })
 }
-
-
 
