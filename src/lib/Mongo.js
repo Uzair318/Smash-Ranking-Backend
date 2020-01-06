@@ -14,11 +14,11 @@ class Mongo {
     constructor() {
         mongoose.connect(process.env.MONGO_URI, { useUnifiedTopology: true, useNewUrlParser: true })
         .then(() => {
-            console.log('DB connection successful')
+            console.log('DB connection successful');
         })
         .catch(err => {
-            console.log('DB connection error: ' + err)
-        }
+            console.log('DB connection error: ' + err);
+        })
     }
 
     // define functions here
