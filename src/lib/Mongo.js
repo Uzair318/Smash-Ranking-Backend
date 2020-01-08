@@ -8,7 +8,7 @@ const MatchModel = require('../models/match');
 const UserModel = require('../models/user');
 const bcrypt = require('bcryptjs');
 
-// https://www.npmjs.com/package/bcryptjs
+// how models work: https://mongoosejs.com/docs/models.html
 
 class Mongo {
     constructor() {
@@ -34,9 +34,9 @@ class Mongo {
 
                 //store hash in db
                 var newUser = new UserModel({
-                username: userName,
-                passwordHash: hash,
-                created: new Date()
+                    username: userName,
+                    passwordHash: hash,
+                    created: new Date(),
                 })
 
                 newUser.save()
@@ -56,11 +56,69 @@ class Mongo {
      */
     getUser(userName) {
         return new Promise((resolve, reject) => {
-
+            UserModel.findOne({username: userName}, (error, user) => {
+                if(error) {
+                    reject(error)
+                } else {
+                    //console.log('user: ' + user)
+                    resolve(user);
+                }
+            }) 
         })
     }
 
+    /**
+     * Updates players' ratings after a match
+     * @param {String} player1 first player's username
+     * @param {String} player2 second player's username
+     * @param {Number} wins number of games won by player1 (and lost by player2)
+     * @param {Number} losses number of games lost by player1 (and won by player2)
+     */
+    updateRatings(player1, player2, wins, losses) {
+        return new Promise((resolve, reject) => {
 
+            numGames = wins + losses; //total # of games played
+
+            // grab the user models from the DB
+            user1 = getUser(player1);
+            user2 = getUser(player2);
+
+            Promise.all([user1, user2])
+            .then((users) => {
+
+                // caluculate new ratings for each player
+                rating1 = users[0].rating_number;
+                rating2 = user[1].rating_number;
+
+                users[0].rating_number = ((rating2 + 400(wins - losses)) / numGames);
+                users[1].rating_number = ((rating1 + 400(losses - wins)) / numGames);
+
+                // increment games played
+                users[0].numGames = user[0].numGames + 1;
+                users[1].numGames = user[1].numGames + 1;
+
+                // save updated users to database 
+                users[0].save();
+                users[1].save();
+                resolve(users[0].rating_number)
+                // UserModel.findOneAndUpdate({username: player1}, users[0], (error, result) => {
+
+                // })
+
+                // UserModel.findOneAndUpdate({username: player2}, users[1], (error, result) => {
+
+                // })
+            })
+            .catch((err) => {
+                reject(err)
+            })
+        })
+            
+    }
+        
+    
 }
+
+
 
 module.exports = Mongo;
