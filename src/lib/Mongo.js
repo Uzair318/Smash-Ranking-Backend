@@ -88,7 +88,7 @@ class Mongo {
 
                 // caluculate new ratings for each player
                 rating1 = users[0].rating_number;
-                rating2 = user[1].rating_number;
+                rating2 = users[1].rating_number;
 
                 users[0].rating_number = ((rating2 + 400(wins - losses)) / numGames);
                 users[1].rating_number = ((rating1 + 400(losses - wins)) / numGames);
@@ -97,17 +97,16 @@ class Mongo {
                 users[0].numGames = user[0].numGames + 1;
                 users[1].numGames = user[1].numGames + 1;
 
+                resolve(users)
+                
+            })
+            .then((users) => {
                 // save updated users to database 
+                // UserModel.findOneAndUpdate({username: player1}, users[0], (error, result) => {})
+                // UserModel.findOneAndUpdate({username: player2}, users[1], (error, result) => {})
                 users[0].save();
                 users[1].save();
                 resolve(users[0].rating_number)
-                // UserModel.findOneAndUpdate({username: player1}, users[0], (error, result) => {
-
-                // })
-
-                // UserModel.findOneAndUpdate({username: player2}, users[1], (error, result) => {
-
-                // })
             })
             .catch((err) => {
                 reject(err)
