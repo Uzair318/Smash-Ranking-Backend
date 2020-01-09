@@ -7,11 +7,8 @@ start();
 
 var mongo = new Mongo();
 
-mongo.newUser('leffen', 'largeWilliam')
-.then(() => {
-    mongo.updateRatings('uzibaby', 'leffen', 1, 0)
-    .then((uzairs_rating) => {
-        console.log(uzairs_rating)
-    })
-})
 
+mongo.updateRatings('uzibaby', 'leffen', 1, 0)
+    .then((outputString) => {
+        console.log('output string: ' + outputString)
+    })

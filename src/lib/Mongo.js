@@ -76,41 +76,78 @@ class Mongo {
      */
     updateRatings(player1, player2, wins, losses) {
         return new Promise((resolve, reject) => {
-
-            numGames = wins + losses; //total # of games played
+            var numGames = wins + losses; //total # of games played
 
             // grab the user models from the DB
-            user1 = getUser(player1);
-            user2 = getUser(player2);
 
-            Promise.all([user1, user2])
-            .then((users) => {
-
-                // caluculate new ratings for each player
-                rating1 = users[0].rating_number;
-                rating2 = users[1].rating_number;
-
-                users[0].rating_number = ((rating2 + 400(wins - losses)) / numGames);
-                users[1].rating_number = ((rating1 + 400(losses - wins)) / numGames);
-
-                // increment games played
-                users[0].numGames = user[0].numGames + 1;
-                users[1].numGames = user[1].numGames + 1;
-
-                resolve(users)
-                
+            var promise1 = new Promise((resolve, reject) => {
+                UserModel.findOne({username: player1}, (error, user1) => {
+                    if(error) {
+                        reject(error)
+                    } else {
+                        console.log('user1: ')
+                        console.log(user1)
+                        resolve(user1)
+                    }
+                })
             })
-            .then((users) => {
-                // save updated users to database 
-                // UserModel.findOneAndUpdate({username: player1}, users[0], (error, result) => {})
-                // UserModel.findOneAndUpdate({username: player2}, users[1], (error, result) => {})
-                users[0].save();
-                users[1].save();
-                resolve(users[0].rating_number)
+            var promise2 = new Promise((resolve, reject) => {
+                UserModel.findOne({username: player2}, (error, user2) => {
+                    if(error) {
+                        reject(error)
+                    } else {
+                        console.log('user2: ')
+                        console.log(user2)
+                        resolve(user2)
+                    }
+                })
             })
-            .catch((err) => {
-                reject(err)
+            .catch((err) => { //if there is an error at this point, catch it
+                console.log(err);
             })
+
+            Promise.all([promise1, promise2])
+                .then((users) => {
+
+                    // const oldRatings = [users[0].rating_number, users[1].rating_number];
+                    const oldRating1 = users[0].rating_number;
+                    const oldRating2 = users[1].rating_number;
+                    
+                    console.log(oldRating1);
+                    console.log(oldRating2);
+
+
+                    var updatePlayer1 = new Promise((resolve, reject) => {
+                        // caluculate new ratings for player1 and increment numGames
+                        users[0].rating_number = ((oldRating2 + 400 * (wins - losses)) / numGames);
+                        users[0].numGames++;
+                        resolve(users[0])
+                    })
+                    .then((user1) => {
+                        console.log('user1 before save: ');
+                        console.log(user1)
+                        UserModel.findOneAndUpdate({username: player1}, user1, (error, result) => {})
+                        resolve('user ' + user1.username + ' rating updated to ' + user1.rating_number)
+                    })
+
+                    var updatePlayer2 = new Promise((resolve, reject) => {
+                        // caluculate new ratings for player2 and increment numGames
+                        users[1].rating_number = ((oldRating1 + 400 * (losses - wins)) / numGames);
+                        users[1].numGames++;
+                        resolve(users[1]);
+                    })
+                    .then((user2) => {
+                        console.log('user2 before save: ');
+                        console.log(user2)
+                        UserModel.findOneAndUpdate({username: player2}, user2, (error, result) => {})
+                        resolve('user ' + user2.username + ' rating updated to ' + user2.rating_number)
+                    })
+
+                })
+
+                .catch((err) => {
+                    reject(err)
+                })
         })
             
     }
