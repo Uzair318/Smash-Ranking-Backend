@@ -12,3 +12,7 @@ mongo.updateRatings('uzibaby', 'leffen', 1, 0)
     .then((outputString) => {
         console.log('output string: ' + outputString)
     })
+    // .then(() => {
+    //     mongo.updateRatings('uzibaby', 'leffen', 5, 3)
+    // })
+    

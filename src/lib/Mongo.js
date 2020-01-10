@@ -7,6 +7,9 @@ const dotenv = require('dotenv').config();
 const MatchModel = require('../models/match');
 const UserModel = require('../models/user');
 const bcrypt = require('bcryptjs');
+const Elo = require('arpad');
+
+const elo = new Elo();
 
 // how models work: https://mongoosejs.com/docs/models.html
 
@@ -85,8 +88,8 @@ class Mongo {
                     if(error) {
                         reject(error)
                     } else {
-                        console.log('user1: ')
-                        console.log(user1)
+                        // console.log('user1: ')
+                        // console.log(user1)
                         resolve(user1)
                     }
                 })
@@ -96,8 +99,8 @@ class Mongo {
                     if(error) {
                         reject(error)
                     } else {
-                        console.log('user2: ')
-                        console.log(user2)
+                        // console.log('user2: ')
+                        // console.log(user2)
                         resolve(user2)
                     }
                 })
@@ -109,42 +112,46 @@ class Mongo {
             Promise.all([promise1, promise2])
                 .then((users) => {
 
-                    // const oldRatings = [users[0].rating_number, users[1].rating_number];
                     const oldRating1 = users[0].rating_number;
                     const oldRating2 = users[1].rating_number;
-                    
-                    console.log(oldRating1);
-                    console.log(oldRating2);
-
+ 
+                    /**
+                     * This is written such that a win is a best of 3 match
+                     *   -maybe write different functions for single matches, best of 3, best of 5
+                     * 
+                     */
 
                     var updatePlayer1 = new Promise((resolve, reject) => {
                         // caluculate new ratings for player1 and increment numGames
-                        users[0].rating_number = ((oldRating2 + 400 * (wins - losses)) / numGames);
-                        users[0].numGames++;
+                        users[0].rating_number = elo.newRatingIfWon(oldRating1, oldRating2);
+                        users[0].games_played++;
                         resolve(users[0])
                     })
                     .then((user1) => {
-                        console.log('user1 before save: ');
-                        console.log(user1)
+                        console.log('user1 being saved: ');
+                        console.log(user1) 
                         UserModel.findOneAndUpdate({username: player1}, user1, (error, result) => {})
-                        resolve('user ' + user1.username + ' rating updated to ' + user1.rating_number)
+                        return('user ' + user1.username + ' rating updated to ' + user1.rating_number)
                     })
 
                     var updatePlayer2 = new Promise((resolve, reject) => {
                         // caluculate new ratings for player2 and increment numGames
-                        users[1].rating_number = ((oldRating1 + 400 * (losses - wins)) / numGames);
-                        users[1].numGames++;
+                        users[1].rating_number = elo.newRatingIfLost(oldRating2, oldRating1);
+                        users[1].games_played = users[1].games_played + 1; // IS THIS ACTUALLY UPDATING?
                         resolve(users[1]);
                     })
                     .then((user2) => {
-                        console.log('user2 before save: ');
+                        console.log('user2 being saved: ');
                         console.log(user2)
                         UserModel.findOneAndUpdate({username: player2}, user2, (error, result) => {})
-                        resolve('user ' + user2.username + ' rating updated to ' + user2.rating_number)
+                        return('user ' + user2.username + ' rating updated to ' + user2.rating_number)
                     })
-
+                    resolve(users)
                 })
-
+                .then((users) => {
+                    console.log('resolving')
+                    resolve(users)
+                })
                 .catch((err) => {
                     reject(err)
                 })
