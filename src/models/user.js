@@ -1,6 +1,5 @@
 // schema for user
 const mongoose = require('mongoose');
-const matchModel = require('./match')
 
 var userSchema = mongoose.Schema({
     username: {type: String, required: true, unique: true},
