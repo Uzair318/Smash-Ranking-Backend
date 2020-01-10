@@ -72,17 +72,16 @@ class Mongo {
 
     /**
      * Updates players' ratings after a match
-     * @param {String} player1 first player's username
-     * @param {String} player2 second player's username
+     * @param {String} player1 winner
+     * @param {String} player2 loser
      * @param {Number} wins number of games won by player1 (and lost by player2)
      * @param {Number} losses number of games lost by player1 (and won by player2)
      */
     updateRatings(player1, player2, wins, losses) {
         return new Promise((resolve, reject) => {
-            var numGames = wins + losses; //total # of games played
+
 
             // grab the user models from the DB
-
             var promise1 = new Promise((resolve, reject) => {
                 UserModel.findOne({username: player1}, (error, user1) => {
                     if(error) {
@@ -114,52 +113,89 @@ class Mongo {
 
                     const oldRating1 = users[0].rating_number;
                     const oldRating2 = users[1].rating_number;
- 
-                    /**
-                     * This is written such that a win is a best of 3 match
-                     *   -maybe write different functions for single matches, best of 3, best of 5
-                     * 
-                     */
 
+
+                    // caluculate new ratings for player1
+                    // PLAYER1's BRANCH
                     var updatePlayer1 = new Promise((resolve, reject) => {
-                        // caluculate new ratings for player1 and increment numGames
-                        users[0].rating_number = elo.newRatingIfWon(oldRating1, oldRating2);
-                        users[0].games_played++;
+                        
+                        // calculate elo increase for a win 
+                        increaseForWin =  elo.newRatingIfWon(oldRating1, oldRating2) - oldRating1;
+                        decreaseForLoss = oldRating1 - elo.newRatingIfLost(oldRating1, oldRating2);
+
+                        // adjust score for wins and losses
+                        users[0].rating_number = oldRating + (wins * increaseForWin) - (losses * decreaseForLoss);
+
                         resolve(users[0])
                     })
                     .then((user1) => {
+                        // update number of games played by player 1
+                        users1.games_played += wins + losses;
+                        return(user1);
+                    })
+                    .then((user1) => {
+                        // update player1 in database
                         console.log('user1 being saved: ');
                         console.log(user1) 
                         UserModel.findOneAndUpdate({username: player1}, user1, (error, result) => {})
                         return('user ' + user1.username + ' rating updated to ' + user1.rating_number)
                     })
+                    .catch((error) => {
+                        reject(error);
+                    })
 
+
+                    // caluculate new ratings for player2 and increment 
+                    // PLAYER2's BRANCH
                     var updatePlayer2 = new Promise((resolve, reject) => {
-                        // caluculate new ratings for player2 and increment numGames
-                        users[1].rating_number = elo.newRatingIfLost(oldRating2, oldRating1);
-                        users[1].games_played = users[1].games_played + 1; // IS THIS ACTUALLY UPDATING?
+
+                        // calculate elo increase for a win 
+                        increaseForWin =  elo.newRatingIfWon(oldRating2, oldRating1) - oldRating2;
+                        decreaseForLoss = oldRating2 - elo.newRatingIfLost(oldRating2, oldRating1);
+
+                        // adjust score for wins and losses (inversed for opponent)
+                        users[1].rating_number = oldRating + (losses * increaseForWin) - (wins * decreaseForLoss);
                         resolve(users[1]);
                     })
                     .then((user2) => {
+                        // update number of games played by player 1
+                        users2.games_played += wins + losses;
+                        return user2;
+                    })
+                    .then((user2) => {
+                        // update player2 in database
                         console.log('user2 being saved: ');
                         console.log(user2)
                         UserModel.findOneAndUpdate({username: player2}, user2, (error, result) => {})
                         return('user ' + user2.username + ' rating updated to ' + user2.rating_number)
                     })
-                    resolve(users)
+                    .catch((error) => {
+                        reject(error);
+                    })
+
+                    // resolve out of Promise.all's .then()
+                    // resolve(users)
+                    return users
+                    
                 })
                 .then((users) => {
+                    // resolve out of function
                     console.log('resolving')
-                    resolve(users)
+                    var newRatings = [users[0].rating_number, users[1].rating_number];
+                    console.log(newRatings)
+                    return(newRatings)
                 })
                 .catch((err) => {
                     reject(err)
                 })
+
+                // //resolve out of function
+                // console.log('resolving out of function')
+                // resolve(newRatings)
         })
-            
-    }
         
-    
+    }
+
 }
 
 

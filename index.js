@@ -9,10 +9,8 @@ var mongo = new Mongo();
 
 
 mongo.updateRatings('uzibaby', 'leffen', 1, 0)
-    .then((outputString) => {
-        console.log('output string: ' + outputString)
+    .then((newRatings) => {
+        console.log("uzibaby's new rating: " + newRatings[0]);
+        console.log("leffen's new rating: " + newRatings[1]);
     })
-    // .then(() => {
-    //     mongo.updateRatings('uzibaby', 'leffen', 5, 3)
-    // })
     
