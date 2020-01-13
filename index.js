@@ -8,18 +8,13 @@ start();
 var mongo = new Mongo();
 
 
+//test code for two users playing a match
+
 mongo.updateRatings('uzibaby', 'leffen', 1, 0)
     .then((newRatings) => {
         console.log("uzibaby's new rating: " + newRatings[0]);
         console.log("leffen's new rating: " + newRatings[1]);
         return;
-    })
-    .then(() => {
-        mongo.updateRatings('uzibaby', 'leffen', 1, 0)
-        .then((newRatings2) => {
-            console.log("uzibaby's new rating 2: " + newRatings2[0]);
-            console.log("leffen's new rating 2: " + newRatings2[1]);
-        })
     })
         
     

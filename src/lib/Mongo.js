@@ -22,6 +22,7 @@ class Mongo {
         .catch(err => {
             console.log('DB connection error: ' + err);
         })
+        
     }
 
     // define functions here
@@ -35,6 +36,9 @@ class Mongo {
         return new Promise((resolve, reject) => {
             bcrypt.hash(password, 10, (err, hash) => {
 
+                if(err) { //test this 
+                    reject(error);
+                }
                 //store hash in db
                 var newUser = new UserModel({
                     username: userName,
@@ -49,6 +53,9 @@ class Mongo {
                 .catch(err => {
                     console.error(err);
                 })
+            })
+            .catch((err) => {
+                console.log(err)
             })
         })
     }
@@ -86,8 +93,6 @@ class Mongo {
                     if(error) {
                         reject(error)
                     } else {
-                        // console.log('user1: ')
-                        // console.log(user1)
                         resolve(user1)
                     }
                 })
@@ -97,8 +102,6 @@ class Mongo {
                     if(error) {
                         reject(error)
                     } else {
-                        // console.log('user2: ')
-                        // console.log(user2)
                         resolve(user2)
                     }
                 })
@@ -118,21 +121,21 @@ class Mongo {
 
                     //calculate change in elo for a single win
                     const eloChange = elo.newRatingIfWon(oldRating1, oldRating2) - oldRating1;
-                    console.log('elo change: ' + eloChange);
+                    console.log('elo change for single game: ' + eloChange);
 
                     // caluculate new ratings for player1
                     // PLAYER1's BRANCH
                     var updatePlayer1 = new Promise((resolve, reject) => {
 
                         // adjust score for wins and losses
-                        console.log('elo change 1: ' + (wins - losses) * eloChange)
-                        users[0].rating_number = oldRating1 + ((wins - losses) * eloChange);//+ (wins * eloChange) - (losses * eloChange);
+                        // console.log('elo change 1: ' + (wins - losses) * eloChange)
+                        users[0].rating_number = oldRating1 + ((wins - losses) * eloChange);
                         resolve(users[0])
                     })
                     .then((user1) => {
                         // update number of games played by player 1
                         user1.games_played += wins + losses;
-                        console.log('new rating 1: ' + users[0].rating_number)
+                        // console.log('new rating 1: ' + users[0].rating_number)
                         return(user1);
                     })
                     .then((user1) => {
@@ -150,14 +153,14 @@ class Mongo {
                     // caluculate new ratings for player2 and increment 
                     // PLAYER2's BRANCH
                     var updatePlayer2 = new Promise((resolve, reject) => {
-                        console.log('elo change 2: ' + (losses - wins) * eloChange)
-                        users[1].rating_number = oldRating2 + ((losses - wins) * eloChange); // - (wins * eloChange) + (losses * eloChange);
+                        // console.log('elo change 2: ' + (losses - wins) * eloChange)
+                        users[1].rating_number = oldRating2 + ((losses - wins) * eloChange);
                         resolve(users[1])
                     })
                     .then((user2) => {
                         // update number of games played by player 1
                         user2.games_played += wins + losses;
-                        console.log('new rating 2: ' + users[1].rating_number)
+                        // console.log('new rating 2: ' + users[1].rating_number)
                         return user2;
                     })
                     .then((user2) => {
@@ -178,32 +181,18 @@ class Mongo {
                 })
                 .then((users) => {
                     // resolve out of function
-                    console.log('resolving')
-                    var newRatings = [users[0].rating_number, users[1].rating_number];
-                    console.log(newRatings)
+
+                    // console.log('resolving')
+                    // var newRatings = [users[0].rating_number, users[1].rating_number];
+                    // console.log(newRatings)
                     return(newRatings)
                 })
                 .catch((err) => {
                     reject(err)
                 })
 
-                // //resolve out of function
-                // console.log('resolving out of function')
-                // resolve(newRatings)
         })
         
-    }
-
-    calculateEloIncrease(firstRating, secondRating) {
-        return new Promise((resolve, reject) => {
-            resolve(elo.newRatingIfWon(firstRating, secondRating) - firstRating);
-        }) 
-    }
-
-    calculateEloDecrease(firstRating, secondRating) {
-        return new Promise((resolve, reject) => {
-            resolve(firstRating - elo.newRatingIfLost(firstRating, secondRating))
-        })
     }
 }
 
