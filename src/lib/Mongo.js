@@ -183,7 +183,7 @@ class Mongo {
                     // resolve out of function
 
                     // console.log('resolving')
-                    // var newRatings = [users[0].rating_number, users[1].rating_number];
+                    var newRatings = [users[0].rating_number, users[1].rating_number];
                     // console.log(newRatings)
                     return(newRatings)
                 })

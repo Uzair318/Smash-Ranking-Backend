@@ -4,6 +4,7 @@ var cors = require('cors')
 var mongoose = require('mongoose')
 var Mongo = require('./Mongo.js')
 var bodyParser = require('body-parser')
+
 const app = express();
 const router = express.Router();
 const dotenv = require('dotenv').config();
@@ -11,9 +12,9 @@ const dotenv = require('dotenv').config();
 // env variables
 const PORT = process.env.PORT || 8000;
 
+var mongo = new Mongo
 
-
-// app.use(bodyParser.json(), cors()) // cross origin resource sharing
+app.use(bodyParser.json(), cors()) // cross origin resource sharing
 
 
 // for now just return 404 to every route
@@ -21,6 +22,21 @@ app.all('*', (request, response) => {
     console.log('returning 404 to catch-all route')
     return response.sendStatus(404);
 })
+
+// app.get('/', (req, res) => {
+
+
+
+//     mongo.getUser()
+//       .then((user) => {
+//         res.send(user)
+//         console.log('sent user!');
+//       })
+//       .catch((err) => {
+//         console.log(err);
+//       })
+  
+//   })
 
 // app.use(require('./error-middleware')); // if we use error middleware
 
