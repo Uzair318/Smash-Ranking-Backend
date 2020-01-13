@@ -80,7 +80,6 @@ class Mongo {
     updateRatings(player1, player2, wins, losses) {
         return new Promise((resolve, reject) => {
 
-
             // grab the user models from the DB
             var promise1 = new Promise((resolve, reject) => {
                 UserModel.findOne({username: player1}, (error, user1) => {
@@ -111,26 +110,29 @@ class Mongo {
             Promise.all([promise1, promise2])
                 .then((users) => {
 
+                    console.log('second round of single wins: ' + [elo.newRatingIfWon(1016, 1000-16), elo.newRatingIfLost(1000-16, 1000+16)]);
+
                     const oldRating1 = users[0].rating_number;
                     const oldRating2 = users[1].rating_number;
+                    console.log('old ratings: ' + [oldRating1, oldRating2])
 
+                    //calculate change in elo for a single win
+                    const eloChange = elo.newRatingIfWon(oldRating1, oldRating2) - oldRating1;
+                    console.log('elo change: ' + eloChange);
 
                     // caluculate new ratings for player1
                     // PLAYER1's BRANCH
                     var updatePlayer1 = new Promise((resolve, reject) => {
-                        
-                        // calculate elo increase for a win 
-                        increaseForWin =  elo.newRatingIfWon(oldRating1, oldRating2) - oldRating1;
-                        decreaseForLoss = oldRating1 - elo.newRatingIfLost(oldRating1, oldRating2);
 
                         // adjust score for wins and losses
-                        users[0].rating_number = oldRating + (wins * increaseForWin) - (losses * decreaseForLoss);
-
+                        console.log('elo change 1: ' + (wins - losses) * eloChange)
+                        users[0].rating_number = oldRating1 + ((wins - losses) * eloChange);//+ (wins * eloChange) - (losses * eloChange);
                         resolve(users[0])
                     })
                     .then((user1) => {
                         // update number of games played by player 1
-                        users1.games_played += wins + losses;
+                        user1.games_played += wins + losses;
+                        console.log('new rating 1: ' + users[0].rating_number)
                         return(user1);
                     })
                     .then((user1) => {
@@ -148,18 +150,14 @@ class Mongo {
                     // caluculate new ratings for player2 and increment 
                     // PLAYER2's BRANCH
                     var updatePlayer2 = new Promise((resolve, reject) => {
-
-                        // calculate elo increase for a win 
-                        increaseForWin =  elo.newRatingIfWon(oldRating2, oldRating1) - oldRating2;
-                        decreaseForLoss = oldRating2 - elo.newRatingIfLost(oldRating2, oldRating1);
-
-                        // adjust score for wins and losses (inversed for opponent)
-                        users[1].rating_number = oldRating + (losses * increaseForWin) - (wins * decreaseForLoss);
-                        resolve(users[1]);
+                        console.log('elo change 2: ' + (losses - wins) * eloChange)
+                        users[1].rating_number = oldRating2 + ((losses - wins) * eloChange); // - (wins * eloChange) + (losses * eloChange);
+                        resolve(users[1])
                     })
                     .then((user2) => {
                         // update number of games played by player 1
-                        users2.games_played += wins + losses;
+                        user2.games_played += wins + losses;
+                        console.log('new rating 2: ' + users[1].rating_number)
                         return user2;
                     })
                     .then((user2) => {
@@ -196,6 +194,17 @@ class Mongo {
         
     }
 
+    calculateEloIncrease(firstRating, secondRating) {
+        return new Promise((resolve, reject) => {
+            resolve(elo.newRatingIfWon(firstRating, secondRating) - firstRating);
+        }) 
+    }
+
+    calculateEloDecrease(firstRating, secondRating) {
+        return new Promise((resolve, reject) => {
+            resolve(firstRating - elo.newRatingIfLost(firstRating, secondRating))
+        })
+    }
 }
 
 
