@@ -77,6 +77,25 @@ class Mongo {
         })
     }
 
+
+    /**
+     * Returns all users in database
+     * Used when trying to display table
+     */
+    getAllUsers() {
+        return new Promise((resolve, reject) => {
+            UserModel.find({}, (error, allUsers) => {
+                if(error) {
+                    reject(error)
+                } else {
+                    resolve(allUsers)
+                }
+            })
+        })
+    }
+
+
+
     /**
      * Updates players' ratings after a match
      * @param {String} player1 winner
