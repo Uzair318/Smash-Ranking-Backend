@@ -31,19 +31,14 @@ app.get('/allUsers', (request, response) => {
     })
 })
 
+app.post('/newUser', (request, response) => {
+    mongo.newUser()
+})
+
 // app.get('/groups=239408123', (req, res) => {
 
 
-//
-//     mongo.getGroup(239408123)
-//       .then((user) => {
-//         res.send(user)
-//         console.log('sent user!');
-//       })
-//       .catch((err) => {
-//         console.log(err);
-//       })
-//   })
+
 
 // app.use(require('./error-middleware')); // if we use error middleware
 

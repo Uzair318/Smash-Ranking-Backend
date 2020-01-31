@@ -5,7 +5,8 @@ var { start, stop } = require('./src/lib/server');
 
 start();
 
-var mongo = new Mongo();
+// test connection to mongo
+// var mongo = new Mongo();
 
 
 // test code for two users playing a match
