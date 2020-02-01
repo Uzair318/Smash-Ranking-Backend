@@ -17,26 +17,28 @@ var mongo = new Mongo
 app.use(bodyParser.json(), cors()) // cross origin resource sharing
 
 
-// for now just return 404 to every route
-app.all('*', (request, response) => {
-    console.log('returning 404 to catch-all route')
-    return response.sendStatus(404);
+// // for now just return 404 to every route
+// app.all('*', (request, response) => {
+//     console.log('returning 404 to catch-all route')
+//     return response.sendStatus(404);
+// })
+
+app.get('/allUsers', (request, response) => {
+    mongo.getAllUsers()
+    .then((users) => {
+        console.log('sending users to ' + PORT)
+        response.send(users);
+    })
 })
 
-// app.get('/', (req, res) => {
+app.post('/newUser', (request, response) => {
+    mongo.newUser()
+})
+
+// app.get('/groups=239408123', (req, res) => {
 
 
 
-//     mongo.getUser()
-//       .then((user) => {
-//         res.send(user)
-//         console.log('sent user!');
-//       })
-//       .catch((err) => {
-//         console.log(err);
-//       })
-  
-//   })
 
 // app.use(require('./error-middleware')); // if we use error middleware
 
